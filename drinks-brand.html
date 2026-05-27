@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cool Drinks</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&family=Montserrat:wght@900;800;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0a0f;
+  --fanta: #FF6B00;
+  --fanta-glow: #ff8c00;
+  --campa: #E8001D;
+  --campa-glow: #ff1a30;
+  --pepsi-blue: #004B93;
+  --pepsi-red: #E32526;
+  --white: #ffffff;
+  --muted: rgba(255,255,255,0.5);
+  --glass: rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.1);
+}
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  cursor: none;
+  overflow-x: hidden;
+}
+
+/* ── CUSTOM CURSOR ── */
+#cursor-glow {
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,0,0.12) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  transition: background 0.4s ease;
+  will-change: transform;
+}
+#cursor-dot {
+  pointer-events: none;
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--fanta);
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  transition: background 0.3s ease, transform 0.15s ease;
+  will-change: transform;
+}
+
+/* ── NAVIGATION ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 24px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease, padding 0.4s ease;
+}
+nav.scrolled {
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 16px 48px;
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, var(--fanta), var(--campa), var(--pepsi-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.nav-links { display: flex; gap: 40px; list-style: none; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--white); }
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  nav.scrolled { padding: 12px 24px; }
+  .nav-links { display: none; }
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: 100vh; min-height: 700px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  text-align: center;
+}
+#bubble-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+.hero-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 20px;
+}
+.hero-eyebrow {
+  font-size: 12px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'Inter', sans-serif;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 14vw, 160px);
+  line-height: 0.9;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--fanta) 0%, #fff 40%, var(--pepsi-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 40px rgba(255,107,0,0.4));
+  animation: titlePulse 4s ease-in-out infinite;
+}
+@keyframes titlePulse {
+  0%, 100% { filter: drop-shadow(0 0 40px rgba(255,107,0,0.4)); }
+  50% { filter: drop-shadow(0 0 80px rgba(255,107,0,0.7)) drop-shadow(0 0 120px rgba(0,75,147,0.3)); }
+}
+.hero-sub {
+  font-size: clamp(14px, 2vw, 18px);
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 2px;
+  font-weight: 300;
+  max-width: 480px;
+}
+/* Floating can */
+.can-wrapper {
+  position: relative;
+  margin: 10px 0;
+  animation: canFloat 3.5s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes canFloat {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-18px) rotate(2deg); }
+}
+.can-svg { filter: drop-shadow(0 20px 40px rgba(255,107,0,0.5)); }
+.cta-btn {
+  position: relative;
+  margin-top: 10px;
+  padding: 18px 48px;
+  border: 1px solid rgba(255,107,0,0.5);
+  background: transparent;
+  color: var(--white);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 4px;
+  cursor: none;
+  overflow: hidden;
+  text-transform: uppercase;
+  transition: border-color 0.3s, color 0.3s;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+}
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--fanta), var(--campa));
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.cta-btn:hover::before { opacity: 1; }
+.cta-btn:hover { border-color: transparent; }
+.cta-btn span { position: relative; z-index: 1; }
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transform: scale(0);
+  animation: rippleAnim 0.6s linear;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+.scroll-hint {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  z-index: 2;
+}
+.scroll-hint span { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+.scroll-line {
+  width: 1px; height: 48px;
+  background: linear-gradient(to bottom, var(--fanta), transparent);
+  animation: scrollLine 1.6s ease-in-out infinite;
+}
+@keyframes scrollLine {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 1; }
+  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+}
+
+/* ── BRAND SHOWCASE ── */
+.brand-showcase {
+  padding: 120px 0 80px;
+  position: relative;
+}
+.brand-showcase-title {
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(14px, 2vw, 16px);
+  letter-spacing: 8px;
+  color: var(--muted);
+  margin-bottom: 80px;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.brand-showcase-title.visible { opacity: 1; transform: translateY(0); }
+
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+@media (max-width: 768px) { .cards-container { padding: 0 20px; gap: 16px; } }
+
+.brand-card {
+  position: relative;
+  border-radius: 24px;
+  padding: 56px 44px 48px;
+  overflow: hidden;
+  min-height: 520px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  cursor: none;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s ease, transform 0.8s ease, box-shadow 0.4s ease;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  will-change: transform;
+}
+.brand-card.visible { opacity: 1; transform: translateY(0); }
+.brand-card:nth-child(2) { transition-delay: 0.15s; }
+.brand-card:nth-child(3) { transition-delay: 0.3s; }
+
+/* Fanta card */
+.card-fanta {
+  background: linear-gradient(145deg, rgba(255,107,0,0.15) 0%, rgba(255,50,0,0.08) 50%, rgba(10,10,15,0.95) 100%);
+  box-shadow: 0 0 60px rgba(255,107,0,0.15), inset 0 1px 0 rgba(255,107,0,0.2);
+}
+.card-fanta:hover { box-shadow: 0 0 100px rgba(255,107,0,0.3), inset 0 1px 0 rgba(255,107,0,0.3); }
+/* Campa card */
+.card-campa {
+  background: linear-gradient(145deg, rgba(232,0,29,0.15) 0%, rgba(100,0,10,0.1) 50%, rgba(10,10,15,0.95) 100%);
+  box-shadow: 0 0 60px rgba(232,0,29,0.15), inset 0 1px 0 rgba(232,0,29,0.2);
+}
+.card-campa:hover { box-shadow: 0 0 100px rgba(232,0,29,0.3), inset 0 1px 0 rgba(232,0,29,0.3); }
+/* Pepsi card */
+.card-pepsi {
+  background: linear-gradient(145deg, rgba(0,75,147,0.2) 0%, rgba(227,37,38,0.1) 60%, rgba(10,10,15,0.95) 100%);
+  box-shadow: 0 0 60px rgba(0,75,147,0.2), inset 0 1px 0 rgba(0,75,147,0.25);
+}
+.card-pepsi:hover { box-shadow: 0 0 100px rgba(0,75,147,0.35), inset 0 1px 0 rgba(0,75,147,0.35); }
+
+.card-bg-orb {
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.brand-card:hover .card-bg-orb { opacity: 0.5; transform: scale(1.1); }
+.card-fanta .card-bg-orb { background: var(--fanta); }
+.card-campa .card-bg-orb { background: var(--campa); }
+.card-pepsi .card-bg-orb { background: var(--pepsi-blue); }
+
+/* drink illustrations inside cards */
+.card-illustration {
+  position: absolute;
+  top: 30px; right: 30px;
+  opacity: 0.85;
+  transition: transform 0.4s ease, opacity 0.4s;
+}
+.brand-card:hover .card-illustration { transform: translateY(-10px) scale(1.05); opacity: 1; }
+
+.card-number {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 80px;
+  line-height: 1;
+  opacity: 0.07;
+  position: absolute;
+  top: 20px; left: 32px;
+  color: white;
+}
+.card-label {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  opacity: 0.6;
+}
+.card-fanta .card-label { color: var(--fanta); }
+.card-campa .card-label { color: var(--campa-glow); }
+.card-pepsi .card-label { color: #4a9eff; }
+
+.card-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 6vw, 72px);
+  line-height: 1;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+.card-tagline {
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+.card-fanta .card-tagline { color: var(--fanta); }
+.card-campa .card-tagline { color: var(--campa-glow); }
+.card-pepsi .card-tagline { color: #4a9eff; }
+
+.card-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 32px;
+  max-width: 280px;
+}
+.card-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: gap 0.3s;
+  cursor: none;
+  border: none; background: none;
+}
+.card-fanta .card-cta { color: var(--fanta); }
+.card-campa .card-cta { color: var(--campa-glow); }
+.card-pepsi .card-cta { color: #4a9eff; }
+.card-cta:hover { gap: 18px; }
+.card-cta-arrow { font-size: 18px; transition: transform 0.3s; }
+.card-cta:hover .card-cta-arrow { transform: translateX(4px); }
+
+/* ── FEATURE STRIP ── */
+.features {
+  padding: 120px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--glass-border);
+}
+.feature-tile {
+  background: rgba(10,10,15,0.8);
+  padding: 56px 44px;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease, background 0.3s;
+}
+.feature-tile:hover { background: rgba(255,255,255,0.04); }
+.feature-tile.visible { opacity: 1; transform: translateY(0); }
+.feature-tile:nth-child(2) { transition-delay: 0.15s; }
+.feature-tile:nth-child(3) { transition-delay: 0.3s; }
+.feature-icon {
+  width: 52px; height: 52px;
+  margin-bottom: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  font-size: 22px;
+}
+.feature-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.feature-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.5);
+}
+.feature-tile::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-tile:hover::after { opacity: 0.4; }
+.tile-1::after { color: var(--fanta); }
+.tile-2::after { color: var(--campa); }
+.tile-3::after { color: var(--pepsi-blue); }
+
+/* ── QUOTE SECTION ── */
+.quote-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  background: #050508;
+  padding: 80px 40px;
+}
+.quote-bg-bubbles { position: absolute; inset: 0; z-index: 0; }
+.quote-content {
+  position: relative; z-index: 2;
+  text-align: center;
+  max-width: 900px;
+}
+.quote-mark {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 15vw, 200px);
+  line-height: 0.7;
+  color: rgba(255,107,0,0.08);
+  display: block;
+  margin-bottom: -20px;
+}
+.quote-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 6vw, 80px);
+  line-height: 1.1;
+  letter-spacing: 3px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.quote-text.visible { opacity: 1; transform: translateY(0); }
+.quote-highlight {
+  background: linear-gradient(90deg, var(--fanta), var(--campa), var(--pepsi-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.quote-attr {
+  margin-top: 40px;
+  font-size: 12px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.8s ease 0.4s;
+}
+.quote-attr.visible { opacity: 1; }
+
+/* ── FOOTER ── */
+footer {
+  background: #050508;
+  border-top: 1px solid var(--glass-border);
+  padding: 60px 48px 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 32px;
+}
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  letter-spacing: 8px;
+  background: linear-gradient(90deg, var(--fanta), var(--campa), var(--pepsi-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-tagline {
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: -20px;
+}
+.footer-socials { display: flex; gap: 20px; }
+.social-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  font-size: 16px;
+  transition: border-color 0.3s, color 0.3s, background 0.3s;
+  cursor: none;
+  text-decoration: none;
+}
+.social-btn:hover { border-color: var(--fanta); color: var(--white); background: rgba(255,107,0,0.1); }
+.footer-legal {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 1px;
+  text-align: center;
+}
+.footer-brands {
+  display: flex; gap: 32px;
+}
+.fb-dot {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  transition: color 0.3s;
+}
+.fb-dot.f:hover { color: var(--fanta); }
+.fb-dot.c:hover { color: var(--campa); }
+.fb-dot.p:hover { color: #4a9eff; }
+
+/* ── DIVIDER ── */
+.section-divider {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+}
+
+/* Parallax layer */
+.parallax-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(255,107,0,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(0,75,147,0.04) 0%, transparent 60%);
+  z-index: 0;
+}
+</style>
+</head>
+<body>
+
+
+<div id="cursor-glow"></div>
+<div id="cursor-dot"></div>
+
+
+<nav id="navbar">
+  <div class="nav-logo">Cool Sips</div>
+  <ul class="nav-links">
+    <li><a href="#showcase">Collection</a></li>
+    <li><a href="#features">About</a></li>
+    <li><a href="#quote">Story</a></li>
+  </ul>
+</nav>
+
+
+<section class="hero">
+  <canvas id="bubble-canvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Premium Beverage Collection</p>
+    <h1 class="hero-title">Taste the<br>cool Drinks</h1>
+    <div class="can-wrapper">
+      <svg class="can-svg" width="90" height="160" viewBox="0 0 90 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="canBody" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FF6B00"/>
+            <stop offset="35%" stop-color="#ff9a40"/>
+            <stop offset="60%" stop-color="#FF6B00"/>
+            <stop offset="100%" stop-color="#cc4400"/>
+          </linearGradient>
+          <linearGradient id="canTop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c0c0c0"/>
+            <stop offset="100%" stop-color="#888"/>
+          </linearGradient>
+          <filter id="canGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <!-- Body -->
+        <rect x="8" y="20" width="74" height="120" rx="10" fill="url(#canBody)" filter="url(#canGlow)"/>
+        <!-- Shine -->
+        <rect x="18" y="24" width="14" height="112" rx="4" fill="rgba(255,255,255,0.18)"/>
+        <!-- Brand stripe -->
+        <rect x="8" y="70" width="74" height="28" fill="rgba(0,0,0,0.25)"/>
+        <!-- Can text -->
+        <text x="45" y="89" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="15" fill="rgba(255,255,255,0.9)" letter-spacing="2">FANTA</text>
+        <!-- Top dome -->
+        <ellipse cx="45" cy="20" rx="37" ry="10" fill="url(#canTop)"/>
+        <!-- Tab -->
+        <ellipse cx="45" cy="12" rx="12" ry="4" fill="#aaa"/>
+        <rect x="42" y="4" width="6" height="12" rx="2" fill="#999"/>
+        <!-- Bottom dome -->
+        <ellipse cx="45" cy="140" rx="37" ry="10" fill="#cc4400"/>
+        <!-- Highlight dots -->
+        <circle cx="68" cy="45" r="3" fill="rgba(255,255,255,0.3)"/>
+        <circle cx="68" cy="55" r="2" fill="rgba(255,255,255,0.2)"/>
+      </svg>
+    </div>
+    <p class="hero-sub">Three icons. One unforgettable experience.</p>
+    <button class="cta-btn" id="cta-btn" onclick="document.getElementById('showcase').scrollIntoView({behavior:'smooth'})">
+      <span>Explore the Collection</span>
+    </button>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+
+<section id="showcase" class="brand-showcase">
+  <p class="brand-showcase-title" id="showcase-title">The Collection</p>
+  <div class="cards-container">
+
+
+    <div class="brand-card card-fanta" data-animate>
+      <div class="card-bg-orb"></div>
+      <div class="card-number">01</div>
+      <div class="card-illustration">
+        <svg width="120" height="200" viewBox="0 0 120 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fg1" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#FF4500"/>
+              <stop offset="40%" stop-color="#FF8C00"/>
+              <stop offset="100%" stop-color="#FF4500"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="20" width="80" height="155" rx="14" fill="url(#fg1)" opacity="0.95"/>
+          <rect x="30" y="26" width="18" height="143" rx="5" fill="rgba(255,255,255,0.15)"/>
+          <rect x="20" y="75" width="80" height="40" fill="rgba(0,0,0,0.2)"/>
+          <text x="60" y="98" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="18" fill="white" letter-spacing="2">FANTA</text>
+          <text x="60" y="112" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="rgba(255,255,255,0.7)" letter-spacing="1">ORANGE</text>
+          <ellipse cx="60" cy="20" rx="40" ry="12" fill="#cc3c00"/>
+          <ellipse cx="60" cy="175" rx="40" ry="12" fill="#cc3c00"/>
+          <rect x="50" y="5" width="20" height="18" rx="3" fill="#aaa"/>
+          <ellipse cx="60" cy="12" rx="14" ry="5" fill="#bbb"/>
+          <circle cx="85" cy="50" r="4" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="85" cy="62" r="2.5" fill="rgba(255,255,255,0.18)"/>
+          <circle cx="78" cy="145" r="3" fill="rgba(255,255,255,0.2)"/>
+        </svg>
+      </div>
+      <div class="card-label">Fanta · Est. 1940</div>
+      <h2 class="card-name">Orange Rush</h2>
+      <p class="card-tagline">⚡ Born Fizzy. Always Bold.</p>
+      <p class="card-desc">An explosion of sun-ripened orange, electrified with carbonation. Every sip crackles with vibrant citrus energy that wakes up your whole world.</p>
+      <button class="card-cta"><span>Discover</span><span class="card-cta-arrow">→</span></button>
+    </div>
+
+
+    <div class="brand-card card-campa" data-animate>
+      <div class="card-bg-orb"></div>
+      <div class="card-number">02</div>
+      <div class="card-illustration">
+        <svg width="120" height="200" viewBox="0 0 120 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E8001D"/>
+              <stop offset="60%" stop-color="#8B0000"/>
+              <stop offset="100%" stop-color="#1a0000"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="20" width="80" height="155" rx="14" fill="url(#cg1)" opacity="0.95"/>
+          <rect x="30" y="26" width="16" height="143" rx="5" fill="rgba(255,255,255,0.12)"/>
+          <rect x="20" y="72" width="80" height="45" fill="rgba(0,0,0,0.3)"/>
+          <text x="60" y="96" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="16" fill="white" letter-spacing="2">CAMPA</text>
+          <text x="60" y="110" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="rgba(255,255,255,0.65)" letter-spacing="1">COLA ORIGINAL</text>
+          <ellipse cx="60" cy="20" rx="40" ry="12" fill="#9b0013"/>
+          <ellipse cx="60" cy="175" rx="40" ry="12" fill="#6b0010"/>
+          <rect x="50" y="5" width="20" height="18" rx="3" fill="#aaa"/>
+          <ellipse cx="60" cy="12" rx="14" ry="5" fill="#bbb"/>
+          <!-- Indian flag-inspired accent -->
+          <rect x="72" y="35" width="20" height="5" fill="rgba(255,153,51,0.6)" rx="1"/>
+          <rect x="72" y="42" width="20" height="5" fill="rgba(255,255,255,0.4)" rx="1"/>
+          <rect x="72" y="49" width="20" height="5" fill="rgba(19,136,8,0.5)" rx="1"/>
+          <circle cx="85" cy="140" r="4" fill="rgba(255,255,255,0.2)"/>
+        </svg>
+      </div>
+      <div class="card-label">Campa · Est. 1977</div>
+      <h2 class="card-name">Born in India</h2>
+      <p class="card-tagline">🇮🇳 Desi Soul. Global Fire.</p>
+      <p class="card-desc">India's original bold cola — reborn for a new generation. Rich, deep, unapologetically intense. Taste the spirit of a billion stories in one sip.</p>
+      <button class="card-cta"><span>Discover</span><span class="card-cta-arrow">→</span></button>
+    </div>
+
+
+    <div class="brand-card card-pepsi" data-animate>
+      <div class="card-bg-orb"></div>
+      <div class="card-number">03</div>
+      <div class="card-illustration">
+        <svg width="120" height="200" viewBox="0 0 120 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="pg1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#004B93"/>
+              <stop offset="50%" stop-color="#003366"/>
+              <stop offset="100%" stop-color="#E32526"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="20" width="80" height="155" rx="14" fill="url(#pg1)" opacity="0.95"/>
+          <rect x="30" y="26" width="15" height="143" rx="5" fill="rgba(255,255,255,0.1)"/>
+          <!-- Pepsi globe -->
+          <circle cx="60" cy="80" r="28" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <circle cx="60" cy="80" r="20" fill="rgba(255,255,255,0.08)"/>
+          <path d="M40 80 Q60 60 80 80" stroke="#004B93" stroke-width="6" fill="rgba(0,75,147,0.8)"/>
+          <path d="M40 80 Q60 100 80 80" stroke="#E32526" stroke-width="6" fill="rgba(227,37,38,0.8)"/>
+          <rect x="20" y="115" width="80" height="30" fill="rgba(0,0,0,0.25)"/>
+          <text x="60" y="134" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="18" fill="white" letter-spacing="3">PEPSI</text>
+          <ellipse cx="60" cy="20" rx="40" ry="12" fill="#003080"/>
+          <ellipse cx="60" cy="175" rx="40" ry="12" fill="#8B0000"/>
+          <rect x="50" y="5" width="20" height="18" rx="3" fill="#aaa"/>
+          <ellipse cx="60" cy="12" rx="14" ry="5" fill="#bbb"/>
+          <circle cx="82" cy="155" r="3" fill="rgba(255,255,255,0.2)"/>
+        </svg>
+      </div>
+      <div class="card-label">Pepsi · Est. 1893</div>
+      <h2 class="card-name">The Pepsi<br>Generation</h2>
+      <p class="card-tagline">💙 Refresh. Repeat. Evolve.</p>
+      <p class="card-desc">A century of bold refreshment distilled into one perfect pop. The taste that defines generations, breaks boundaries, and keeps the world moving forward.</p>
+      <button class="card-cta"><span>Discover</span><span class="card-cta-arrow">→</span></button>
+    </div>
+
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<section id="features">
+  <div class="features">
+    <div class="features-grid">
+      <div class="feature-tile tile-1" data-animate>
+        <div class="feature-icon">⚡</div>
+        <h3 class="feature-title">No Compromise on Taste</h3>
+        <p class="feature-desc">Every formula crafted to the last molecule. We don't water down flavor — we amplify it until it sings.</p>
+      </div>
+      <div class="feature-tile tile-2" data-animate>
+        <div class="feature-icon">🌊</div>
+        <h3 class="feature-title">Crafted for Every Moment</h3>
+        <p class="feature-desc">Sunrise. Midnight. The in-between. Our drinks don't clock in and out — they're always on, always ready.</p>
+      </div>
+      <div class="feature-tile tile-3" data-animate>
+        <div class="feature-icon">❄️</div>
+        <h3 class="feature-title">The Coldest Sip</h3>
+        <p class="feature-desc">Engineered for maximum chill. From can to lips, the temperature drop is an experience in itself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="quote" class="quote-section">
+  <div class="parallax-bg"></div>
+  <canvas id="quote-bubbles" class="quote-bg-bubbles"></canvas>
+  <div class="quote-content">
+    <span class="quote-mark">"</span>
+    <p class="quote-text" id="quote-text">
+      Every sip is a story.<br>
+      <span class="quote-highlight">Make yours unforgettable.</span>
+    </p>
+    <p class="quote-attr" id="quote-attr">— Electric Sips Manifesto</p>
+  </div>
+</section>
+
+
+<footer>
+  <div class="footer-logo">Electric Sips</div>
+  <p class="footer-tagline">Taste the Electric</p>
+  <div class="footer-brands">
+    <span class="fb-dot f">Fanta</span>
+    <span class="fb-dot c">Campa</span>
+    <span class="fb-dot p">Pepsi</span>
+  </div>
+  <div class="footer-socials">
+    <a href="#" class="social-btn" aria-label="Instagram">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+    </a>
+    <a href="#" class="social-btn" aria-label="Twitter/X">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <a href="#" class="social-btn" aria-label="YouTube">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75,15.02 15.5,12 9.75,8.98" fill="currentColor" stroke="none"/></svg>
+    </a>
+  </div>
+  <p class="footer-legal">© 2025 Electric Sips. A premium beverage experience. All vibes reserved.</p>
+</footer>
+
+<script>
+// ── CURSOR GLOW ──
+const cursorGlow = document.getElementById('cursor-glow');
+const cursorDot = document.getElementById('cursor-dot');
+let mx = -300, my = -300, gx = -300, gy = -300;
+const colors = { fanta: 'rgba(255,107,0,0.14)', campa: 'rgba(232,0,29,0.14)', pepsi: 'rgba(0,75,147,0.14)' };
+let currentColor = colors.fanta;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursorDot.style.left = mx + 'px';
+  cursorDot.style.top = my + 'px';
+  // Color by section
+  const el = document.elementFromPoint(mx, my);
+  if (el) {
+    if (el.closest('.card-fanta')) { currentColor = colors.fanta; cursorDot.style.background = '#FF6B00'; }
+    else if (el.closest('.card-campa')) { currentColor = colors.campa; cursorDot.style.background = '#E8001D'; }
+    else if (el.closest('.card-pepsi')) { currentColor = colors.pepsi; cursorDot.style.background = '#4a9eff'; }
+    else { currentColor = colors.fanta; cursorDot.style.background = '#FF6B00'; }
+  }
+  cursorGlow.style.background = `radial-gradient(circle, ${currentColor} 0%, transparent 70%)`;
+});
+
+function animateCursor() {
+  gx += (mx - gx) * 0.08;
+  gy += (my - gy) * 0.08;
+  cursorGlow.style.left = gx + 'px';
+  cursorGlow.style.top = gy + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+// ── HERO BUBBLES ──
+(function() {
+  const canvas = document.getElementById('bubble-canvas');
+  const ctx = canvas.getContext('2d');
+  const bubbles = [];
+  const COLORS = ['rgba(255,107,0,', 'rgba(232,0,29,', 'rgba(0,75,147,', 'rgba(255,200,0,'];
+
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function spawn() {
+    const c = COLORS[Math.floor(Math.random() * COLORS.length)];
+    bubbles.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height + 20,
+      r: 3 + Math.random() * 14,
+      speed: 0.4 + Math.random() * 1.2,
+      drift: (Math.random() - 0.5) * 0.5,
+      alpha: 0.08 + Math.random() * 0.18,
+      color: c,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.01 + Math.random() * 0.02,
+    });
+  }
+
+  for (let i = 0; i < 60; i++) {
+    spawn();
+    bubbles[i].y = Math.random() * canvas.height;
+  }
+
+  function drawBubble(b) {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.strokeStyle = b.color + (b.alpha * 1.5) + ')';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fillStyle = b.color + b.alpha + ')';
+    ctx.fill();
+    // Highlight
+    ctx.beginPath();
+    ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fill();
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      b.y -= b.speed;
+      b.wobble += b.wobbleSpeed;
+      b.x += Math.sin(b.wobble) * 0.4 + b.drift;
+      drawBubble(b);
+      if (b.y + b.r < -10) { bubbles.splice(i, 1); spawn(); }
+    }
+    if (bubbles.length < 70) spawn();
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ── QUOTE BUBBLES ──
+(function() {
+  const canvas = document.getElementById('quote-bubbles');
+  const ctx = canvas.getContext('2d');
+  const bubbles = [];
+  function resize() { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const C = ['rgba(255,107,0,', 'rgba(232,0,29,', 'rgba(0,75,147,'];
+  for (let i = 0; i < 35; i++) {
+    const c = C[i % 3];
+    bubbles.push({
+      x: Math.random() * 1400, y: Math.random() * 900,
+      r: 8 + Math.random() * 40,
+      speed: 0.15 + Math.random() * 0.4,
+      alpha: 0.03 + Math.random() * 0.08,
+      color: c, wobble: Math.random() * 6, ws: 0.005 + Math.random() * 0.01
+    });
+  }
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    bubbles.forEach(b => {
+      b.y -= b.speed; b.wobble += b.ws;
+      b.x += Math.sin(b.wobble) * 0.3;
+      if (b.y + b.r < 0) b.y = canvas.height + b.r;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.strokeStyle = b.color + (b.alpha * 2) + ')';
+      ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = b.color + b.alpha + ')';
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ── NAVBAR SCROLL ──
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+}, { passive: true });
+
+// ── INTERSECTION OBSERVER ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('[data-animate], .brand-showcase-title, .quote-text, .quote-attr').forEach(el => observer.observe(el));
+
+// Manually watch these too
+['showcase-title','quote-text','quote-attr'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) observer.observe(el);
+});
+
+// ── CTA RIPPLE ──
+document.getElementById('cta-btn').addEventListener('click', function(e) {
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = this.getBoundingClientRect();
+  r.style.cssText = `left:${e.clientX-rect.left}px;top:${e.clientY-rect.top}px;width:${rect.width}px;height:${rect.width}px;margin-left:-${rect.width/2}px;margin-top:-${rect.width/2}px;`;
+  this.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+});
+
+// ── 3D CARD TILT ──
+document.querySelectorAll('.brand-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `perspective(1000px) rotateY(${x * 12}deg) rotateX(${-y * 8}deg) translateY(0) scale(1.02)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) translateY(0) scale(1)';
+  });
+});
+
+// ── PARALLAX QUOTE ──
+window.addEventListener('scroll', () => {
+  const qs = document.getElementById('quote');
+  if (!qs) return;
+  const rect = qs.getBoundingClientRect();
+  const pct = -rect.top / window.innerHeight;
+  const bg = qs.querySelector('.parallax-bg');
+  if (bg) bg.style.transform = `translateY(${pct * 40}px)`;
+}, { passive: true });
+</script>
+</body>
+</html>
